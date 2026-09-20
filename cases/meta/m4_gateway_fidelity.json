@@ -1,0 +1,212 @@
+{
+  "id": "m4_gateway_fidelity",
+  "group": "meta",
+  "title": "M4 - does the OpenRouter gateway pass every documented question shape through",
+  "doc_ref": "docs.typesafe.ai/primitives/advanced - 'Where structure is allowed'",
+  "note": "Every field of a question accepts a string, an object, an array or null. These calls go to OpenRouter's /api/alpha/decisions rather than TypeSafe's own endpoint, so a shape that the docs describe might still be dropped or rejected in transit. Each shape gets its own variant so a failure names the shape that broke rather than failing a request carrying six of them. This runs first in practice: a gateway that quietly drops a criteria object would look exactly like a model that ignores criteria. Result: every documented shape is carried through except one. The Advanced page lists null as an accepted value for instructions, and the API rejects it with a 400 whose validator expected a string, record or array. The variant is kept and the rejection asserted, so the discrepancy stays visible if either side changes.",
+  "variants": [
+    {
+      "id": "string_baseline",
+      "questions": {
+        "probe": {
+          "type": "choice",
+          "instructions": "Which team should handle this?",
+          "criteria": {
+            "returns": "Exchanges, wrong or damaged items",
+            "shipping": "Delivery status, delays, lost packages",
+            "billing": "Charges, invoices, payment problems"
+          }
+        }
+      }
+    },
+    {
+      "id": "null_criteria",
+      "questions": {
+        "probe": {
+          "type": "choice",
+          "instructions": "Which team should handle this?",
+          "criteria": {
+            "returns": null,
+            "shipping": null,
+            "billing": null
+          }
+        }
+      }
+    },
+    {
+      "id": "object_criteria",
+      "questions": {
+        "probe": {
+          "type": "choice",
+          "instructions": {
+            "question": "Which team should handle this?",
+            "focus": "Classify the customer's primary request, not every topic mentioned."
+          },
+          "criteria": {
+            "returns": {
+              "what": "Exchanges, wrong or damaged items",
+              "not_for": "Charges or delivery tracking",
+              "examples": [
+                "The shoes are the wrong size",
+                "The item arrived broken"
+              ]
+            },
+            "shipping": {
+              "what": "Delivery status, delays, lost packages",
+              "not_for": "Charges or exchanges",
+              "examples": [
+                "Where is my package?",
+                "It never arrived"
+              ]
+            },
+            "billing": {
+              "what": "Charges, invoices, payment problems",
+              "not_for": "Order tracking or exchanges",
+              "examples": [
+                "I was charged twice",
+                "Where is my refund?"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "array_instructions",
+      "questions": {
+        "probe": {
+          "type": "noul",
+          "instructions": {
+            "question": "Does the message describe more than one separate problem?",
+            "compare": [
+              "`ticket.message`",
+              "`policy.categories`"
+            ],
+            "focus": "Count distinct problems, not distinct sentences."
+          }
+        }
+      }
+    },
+    {
+      "id": "nested_subtree_criteria",
+      "questions": {
+        "probe": {
+          "type": "choice",
+          "instructions": "Which top-level department does this belong to?",
+          "criteria": {
+            "customer_service": {
+              "post_purchase": [
+                "returns",
+                "exchanges",
+                "refunds"
+              ],
+              "logistics": [
+                "delivery_tracking",
+                "lost_packages"
+              ]
+            },
+            "finance": {
+              "payments": [
+                "duplicate_charges",
+                "invoices",
+                "chargebacks"
+              ]
+            },
+            "growth": [
+              "pricing",
+              "upgrades",
+              "partnerships"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "object_score_levels",
+      "questions": {
+        "probe": {
+          "type": "score",
+          "instructions": {
+            "question": "How focused is this message on a single request?",
+            "note": "Judge the number of independent requests, not their size."
+          },
+          "criteria": [
+            {
+              "summary": "One request, clearly stated",
+              "signals": [
+                "A single ask",
+                "Nothing described as 'also'"
+              ]
+            },
+            {
+              "summary": "One main request plus a small related one",
+              "signals": [
+                "A primary ask and one minor adjacent one"
+              ]
+            },
+            {
+              "summary": "Several independent requests bundled together",
+              "signals": [
+                "Two or more unrelated asks"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "null_instructions",
+      "questions": {
+        "probe": {
+          "type": "choice",
+          "instructions": null,
+          "criteria": {
+            "returns": "The customer wants to exchange or send back an item",
+            "shipping": "The customer is asking where their package is",
+            "billing": "The customer has a problem with a charge"
+          }
+        }
+      },
+      "expect_error": true,
+      "note": "Documented as accepted; rejected in practice."
+    }
+  ],
+  "states": [
+    {
+      "id": "three_way",
+      "state": {
+        "ticket": {
+          "message": "Shoes arrived two weeks late and in the wrong size. Also I see two charges of $120 on my card."
+        },
+        "policy": {
+          "categories": [
+            "delivery",
+            "sizing",
+            "payment"
+          ]
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "type": "report",
+      "question": "probe",
+      "variants": [
+        "string_baseline",
+        "null_criteria",
+        "object_criteria",
+        "array_instructions",
+        "nested_subtree_criteria",
+        "object_score_levels"
+      ]
+    },
+    {
+      "type": "expect_error",
+      "variants": [
+        "null_instructions"
+      ],
+      "contains": "instructions"
+    }
+  ]
+}

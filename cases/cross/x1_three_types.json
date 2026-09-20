@@ -1,0 +1,95 @@
+{
+  "id": "x1_three_types",
+  "group": "cross",
+  "title": "X - the same judgment asked as Noul, Score and Choice",
+  "doc_ref": "docs.typesafe.ai/primitives/noul - Python experience comparison table",
+  "note": "One underlying quantity, three primitives, one request. The docs argue a Noul value is not a scale of the thing asked about: it is the probability that a proposition is true. The Score, whose levels the caller defines, is what actually measures degree. This case puts both next to a Choice so the difference is visible in numbers rather than prose.",
+  "questions": {
+    "strong_in_python": {
+      "type": "noul",
+      "instructions": "Is the candidate strong in Python?"
+    },
+    "used_python_at_work": {
+      "type": "noul",
+      "instructions": "Does the resume state that the candidate has used Python at work?",
+      "note_for_readers": "The docs' example of a well-bounded yes/no, next to the vague one above."
+    },
+    "python_experience": {
+      "type": "score",
+      "instructions": "How much Python experience does the candidate have?",
+      "criteria": [
+        "No experience with Python",
+        "Some familiarity, such as small scripts or coursework",
+        "Regular use in a job",
+        "Deep expertise over many years"
+      ]
+    },
+    "python_bucket": {
+      "type": "choice",
+      "instructions": "Which bucket best describes the candidate's Python experience?",
+      "criteria": {
+        "none": "No experience with Python",
+        "familiar": "Some familiarity, such as small scripts or coursework",
+        "professional": "Regular use in a job",
+        "expert": "Deep expertise over many years"
+      }
+    }
+  },
+  "states": [
+    {
+      "id": "java_go_only",
+      "state": "My experience is in Java and Go. I have not used Python.",
+      "expect": {
+        "strong_in_python": {"near": 0.03, "tol": 0.1},
+        "python_experience": {"near": 0.0, "tol": 0.2},
+        "python_bucket": {"equals": "none"},
+        "used_python_at_work": {"max": 0.15}
+      }
+    },
+    {
+      "id": "occasional_scripts",
+      "state": "I have used Python occasionally for small scripts alongside my main Java work.",
+      "expect": {
+        "strong_in_python": {"near": 0.14, "tol": 0.15},
+        "python_experience": {"near": 1.0, "tol": 0.35},
+        "python_bucket": {"equals": "familiar"}
+      }
+    },
+    {
+      "id": "daily_two_years",
+      "state": "I used Python every day for two years in my last job, mostly data pipelines.",
+      "expect": {
+        "strong_in_python": {"near": 0.81, "tol": 0.15},
+        "python_experience": {"near": 2.05, "tol": 0.35},
+        "python_bucket": {"equals": "professional"},
+        "used_python_at_work": {"min": 0.85}
+      }
+    },
+    {
+      "id": "eight_years_django",
+      "state": "I have written Python daily for eight years, including maintaining a large Django codebase.",
+      "expect": {
+        "strong_in_python": {"near": 0.92, "tol": 0.12},
+        "python_experience": {"near": 2.89, "tol": 0.35},
+        "python_bucket": {"equals": "expert"}
+      }
+    }
+  ],
+  "relations": [
+    {
+      "type": "rank",
+      "question": "strong_in_python",
+      "order": ["java_go_only", "occasional_scripts", "daily_two_years", "eight_years_django"]
+    },
+    {
+      "type": "rank",
+      "question": "python_experience",
+      "order": ["java_go_only", "occasional_scripts", "daily_two_years", "eight_years_django"]
+    },
+    {
+      "type": "report",
+      "questions": ["strong_in_python", "python_experience", "python_bucket"],
+      "note": "Printed side by side: the Noul jumps 0.14 -> 0.81 between two adjacent candidates while the Score moves one level. The Noul spacing is not a scale."
+    }
+  ]
+}

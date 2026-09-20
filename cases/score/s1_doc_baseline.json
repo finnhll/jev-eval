@@ -1,0 +1,54 @@
+{
+  "id": "s1_doc_baseline",
+  "group": "score",
+  "title": "S1 - reproduce the documented bug_severity scores",
+  "doc_ref": "docs.typesafe.ai/primitives/score - 'Reading a Score' table",
+  "note": "Five bug reports with published score, confidence and full distributions. The middle two matter most: they are the states where probability splits across levels, which is where a Score earns its keep over a Choice.",
+  "questions": {
+    "bug_severity": {
+      "type": "score",
+      "instructions": "How severe is the reported issue?",
+      "criteria": [
+        "Cosmetic; no impact to functionality",
+        "Broken or degraded feature, but workaround exists",
+        "Blocking issue; no workaround exists"
+      ]
+    }
+  },
+  "states": [
+    {
+      "id": "misaligned",
+      "state": "The export button is misaligned by a few pixels on the settings page.",
+      "expect": {"bug_severity": {"near": 0.0, "tol": 0.15, "conf_min": 0.85}}
+    },
+    {
+      "id": "pdf_dead_csv_works",
+      "state": "The PDF export button does nothing when clicked. I can still export to CSV and convert it myself, but that takes ages.",
+      "expect": {"bug_severity": {"near": 1.0, "tol": 0.15, "conf_min": 0.85}}
+    },
+    {
+      "id": "spinner_mixed",
+      "state": "Export to PDF fails with a spinner that never finishes. Some of our team say CSV export still works for them, others say it fails too.",
+      "expect": {"bug_severity": {"near": 1.11, "tol": 0.2}}
+    },
+    {
+      "id": "safari_crash",
+      "state": "The export button crashes the settings page in Safari. It works in Chrome, but a few of our customers only use Safari.",
+      "note": "Documented score 1.43 at confidence 0.35: the model is genuinely split between 'workaround exists' and 'no workaround'.",
+      "expect": {"bug_severity": {"near": 1.43, "tol": 0.2, "conf_max": 0.6}}
+    },
+    {
+      "id": "nobody_can_log_in",
+      "state": "Nobody on our team can log in since this morning. We get a 500 error on every attempt.",
+      "expect": {"bug_severity": {"near": 2.0, "tol": 0.15, "conf_min": 0.85}}
+    }
+  ],
+  "relations": [
+    {
+      "type": "rank",
+      "question": "bug_severity",
+      "order": ["misaligned", "pdf_dead_csv_works", "spinner_mixed",
+                "safari_crash", "nobody_can_log_in"]
+    }
+  ]
+}

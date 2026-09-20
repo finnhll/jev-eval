@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Generated from results/raw.jsonl by `python3 cli.py report`.
+# The raw responses are committed; the rendering is not.
+results/report.html

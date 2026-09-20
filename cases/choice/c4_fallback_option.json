@@ -1,0 +1,70 @@
+{
+  "id": "c4_fallback_option",
+  "group": "choice",
+  "title": "C4 - what happens to a ticket that fits none of the options",
+  "doc_ref": "docs.typesafe.ai/primitives/choice - 'Add an other or none of the above option'",
+  "note": "Three messages that belong to no listed team, asked with and without a fallback option. Without one the model has to pick something; the question is whether confidence warns you, or whether a wrong answer arrives looking confident. This decides whether every Choice in production needs a mandatory escape hatch.",
+  "variants": [
+    {
+      "id": "no_fallback",
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which team should handle this?",
+          "criteria": {
+            "returns": "Exchanges, wrong or damaged items",
+            "shipping": "Delivery status, delays, lost packages",
+            "billing": "Charges, invoices, payment problems"
+          }
+        }
+      }
+    },
+    {
+      "id": "with_fallback",
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which team should handle this?",
+          "criteria": {
+            "returns": "Exchanges, wrong or damaged items",
+            "shipping": "Delivery status, delays, lost packages",
+            "billing": "Charges, invoices, payment problems",
+            "other": "Anything none of the other options covers"
+          }
+        }
+      }
+    }
+  ],
+  "states": [
+    {
+      "id": "visa_sponsorship",
+      "state": "Do you sponsor work visas for engineering roles?",
+      "expect_by_variant": {"with_fallback": {"department": {"equals": "other"}}}
+    },
+    {
+      "id": "website_typo",
+      "state": "Small thing: the footer on your pricing page says 'Copywright'.",
+      "expect_by_variant": {"with_fallback": {"department": {"equals": "other"}}}
+    },
+    {
+      "id": "partnership",
+      "state": "We run a cycling club with 400 members and would like to discuss a partnership.",
+      "expect_by_variant": {"with_fallback": {"department": {"equals": "other"}}}
+    }
+  ],
+  "relations": [
+    {
+      "type": "variant_gap",
+      "question": "department",
+      "metric": "confidence",
+      "variant": "no_fallback",
+      "than_variant": "with_fallback",
+      "direction": "less",
+      "min_gap": 0.2,
+      "hypothesis": true,
+      "note": "Predicted: an unlisted topic should look uncertain when there is nowhere for it to go."
+    },
+    {"type": "variant_profile", "question": "department"},
+    {"type": "report", "question": "department"}
+  ]
+}

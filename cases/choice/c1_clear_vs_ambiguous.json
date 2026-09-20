@@ -1,0 +1,159 @@
+{
+  "id": "c1_clear_vs_ambiguous",
+  "group": "choice",
+  "title": "C1 - confidence should collapse when a ticket belongs to two teams",
+  "doc_ref": "docs.typesafe.ai/primitives/choice - basic and 'more complex' examples",
+  "note": "Four unambiguous tickets and three that genuinely span teams. The documented confidence for the shoe ticket is 1.0 and for the three-way ticket 0.42 (choice returns, probabilities 0.61/0.35/0.04). The gap between the two groups is what makes confidence-gated routing possible at all.",
+  "questions": {
+    "department": {
+      "type": "choice",
+      "instructions": "Which team should handle this?",
+      "criteria": {
+        "returns": "Exchanges, wrong or damaged items",
+        "shipping": "Delivery status, delays, lost packages",
+        "billing": "Charges, invoices, payment problems"
+      }
+    }
+  },
+  "states": [
+    {
+      "id": "wrong_size",
+      "state": "My running shoes arrived in the wrong size. Can I swap them for a size 10?",
+      "tags": [
+        "clear"
+      ],
+      "expect": {
+        "department": {
+          "equals": "returns",
+          "conf_min": 0.85
+        }
+      }
+    },
+    {
+      "id": "label_created",
+      "state": "The tracking page has said 'label created' for nine days now. Where is my package?",
+      "tags": [
+        "clear"
+      ],
+      "expect": {
+        "department": {
+          "equals": "shipping",
+          "conf_min": 0.7
+        }
+      }
+    },
+    {
+      "id": "double_charge",
+      "state": "I was charged $120 twice for the same order. Please reverse the duplicate charge.",
+      "tags": [
+        "clear"
+      ],
+      "expect": {
+        "department": {
+          "equals": "billing",
+          "conf_min": 0.7
+        }
+      }
+    },
+    {
+      "id": "crushed_box",
+      "state": "The box arrived crushed and the shoes inside are badly scuffed. I would like a different pair.",
+      "tags": [
+        "clear"
+      ],
+      "expect": {
+        "department": {
+          "equals": "returns",
+          "conf_min": 0.5
+        }
+      }
+    },
+    {
+      "id": "three_way",
+      "state": "Shoes arrived two weeks late and in the wrong size. Also I see two charges of $120 on my card. What are you going to do about this?",
+      "tags": [
+        "ambiguous"
+      ],
+      "note": "Documented: choice returns, confidence 0.42, probabilities returns 0.61 / billing 0.35 / shipping 0.04.",
+      "expect": {
+        "department": {
+          "equals": "returns",
+          "conf_max": 0.6
+        }
+      }
+    },
+    {
+      "id": "late_and_unwanted",
+      "state": "My order showed up a week late and by then I no longer needed it. Can I send it back?",
+      "tags": [
+        "clear"
+      ],
+      "expect": {
+        "department": {
+          "equals": "returns"
+        }
+      },
+      "note": "Written as ambiguous, but the model reads 'can I send it back' as plainly returns at confidence 0.90. Kept in the clear group: the mis-specification was the case author's, not the answer's."
+    },
+    {
+      "id": "partial_shipment",
+      "state": "I paid for two pairs but only one arrived, and my card shows the full amount.",
+      "tags": [
+        "ambiguous"
+      ],
+      "expect": {
+        "department": {
+          "conf_max": 0.75
+        }
+      }
+    },
+    {
+      "id": "soaked_box",
+      "state": "The courier left the box out in the rain and everything inside is soaked. I want my money back for the whole order.",
+      "tags": [
+        "ambiguous"
+      ],
+      "note": "Damage in transit (shipping), a damaged item (returns), and a refund request (billing) at once. Observed 0.84: the model resolves 'primary request' more decisively than the case author expected. Recorded as a hypothesis miss.",
+      "expect": {
+        "department": {
+          "conf_max": 0.8,
+          "hypothesis": true
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "type": "mean_gap",
+      "question": "department",
+      "metric": "confidence",
+      "high": [
+        "wrong_size",
+        "label_created",
+        "double_charge",
+        "crushed_box",
+        "late_and_unwanted"
+      ],
+      "low": [
+        "three_way",
+        "partial_shipment",
+        "soaked_box"
+      ],
+      "min_gap": 0.3
+    },
+    {
+      "type": "confidence_auroc",
+      "question": "department",
+      "correct": {
+        "wrong_size": "returns",
+        "label_created": "shipping",
+        "double_charge": "billing",
+        "crushed_box": "returns",
+        "three_way": "returns",
+        "late_and_unwanted": "returns",
+        "partial_shipment": "billing",
+        "soaked_box": "shipping"
+      }
+    }
+  ]
+}

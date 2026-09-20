@@ -1,0 +1,54 @@
+{
+  "is_spam": {
+    "type": "noul",
+    "instructions": {
+      "question": "Does `ticket.message` request a sensitive credential?",
+      "focus": "Look for a request to disclose the credential itself."
+    },
+    "criteria": {
+      "true": {
+        "what": "Asks the recipient to disclose a password, security code or API key",
+        "examples": ["Reply with your password", "Send us your API key"]
+      },
+      "false": {
+        "what": "Does not ask the recipient to disclose a credential",
+        "not_for": "A legitimate instruction to reset a credential",
+        "examples": ["Use this link to reset your password"]
+      }
+    }
+  },
+  "department": {
+    "type": "choice",
+    "instructions": "Which team should handle `ticket.message`?",
+    "criteria": {
+      "billing": {
+        "what": "Charges, invoices, refunds, subscriptions",
+        "not_for": "Order tracking or account access",
+        "examples": ["I was charged twice", "Where is my refund?"]
+      },
+      "technical": {
+        "what": "Bugs, outages, integrations",
+        "not_for": "Pricing questions",
+        "examples": ["The API returns 500s", "Webhooks stopped firing"]
+      },
+      "sales": {
+        "what": "Pricing, upgrades, new accounts",
+        "not_for": "Existing charges on an account",
+        "examples": ["What does the Pro plan cost?"]
+      }
+    }
+  },
+  "frustration": {
+    "type": "score",
+    "instructions": {
+      "question": "How frustrated does the customer appear?",
+      "inspect": "`ticket.message`",
+      "focus": "Judge expressed frustration, not issue severity."
+    },
+    "criteria": [
+      { "what": "Calm and matter-of-fact", "signals": ["Neutral wording"] },
+      { "what": "Frustrated but civil", "signals": ["Expresses annoyance", "Remains constructive"] },
+      { "what": "Very angry or threatening to leave", "signals": ["Hostile language", "Threatens cancellation"] }
+    ]
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "id": "s5_level_count",
+  "group": "score",
+  "title": "S5 - does a finer rubric buy resolution or just flatten the distribution",
+  "doc_ref": "docs.typesafe.ai/primitives/score - 'Use as many levels as you can describe distinctly, up to 10'",
+  "note": "Eight messages written as a frustration ladder, scored against rubrics of 2, 5 and 10 levels. The ten-level rubric is deliberately at the edge of what can be described distinctly, which is exactly the condition the docs warn about. Two things separate a useful rubric from a wasteful one: whether the ranking improves, and whether confidence survives. A rubric that ranks no better and reports less confidence is strictly worse. Result: the two-level rubric saturates - six of eight states land at 0.99 or 1.00, so it cannot rank at all (rho 0.55). Five and ten levels rank identically well (rho 0.976 each, both disagreeing with the author only on the two adjacent middle rungs), but mean confidence falls from 0.85 to 0.82 and input tokens rise. Ten levels bought no resolution over five.",
+  "variants": [
+    {
+      "id": "levels_2",
+      "questions": {
+        "frustration": {
+          "type": "score",
+          "instructions": "How frustrated does the customer appear?",
+          "criteria": [
+            "Not frustrated",
+            "Frustrated"
+          ]
+        }
+      }
+    },
+    {
+      "id": "levels_5",
+      "questions": {
+        "frustration": {
+          "type": "score",
+          "instructions": "How frustrated does the customer appear?",
+          "criteria": [
+            "Calm and matter-of-fact",
+            "Mildly impatient, but untroubled",
+            "Clearly frustrated while staying civil",
+            "Angry, with pointed or sarcastic language",
+            "Hostile, or threatening to take their business elsewhere"
+          ]
+        }
+      }
+    },
+    {
+      "id": "levels_10",
+      "questions": {
+        "frustration": {
+          "type": "score",
+          "instructions": "How frustrated does the customer appear?",
+          "criteria": [
+            "Warm and appreciative",
+            "Neutral and matter-of-fact",
+            "Faintly impatient",
+            "Mildly irritated but polite",
+            "Clearly frustrated while staying civil",
+            "Openly annoyed, with pointed wording",
+            "Angry, with sarcasm or accusation",
+            "Very angry, questioning competence",
+            "Hostile, demanding escalation",
+            "Threatening to leave or to take further action"
+          ]
+        }
+      }
+    }
+  ],
+  "states": [
+    {
+      "id": "g0_thanks",
+      "state": "Thanks, that fixed it. Appreciate the quick turnaround."
+    },
+    {
+      "id": "g1_neutral",
+      "state": "Following up on ticket 4471 - is there an update?"
+    },
+    {
+      "id": "g2_mild",
+      "state": "This is the second time I have had to ask about this one."
+    },
+    {
+      "id": "g3_annoyed",
+      "state": "I have now waited nine days for a reply. That is not great."
+    },
+    {
+      "id": "g4_frustrated",
+      "state": "Three weeks, four emails, and still nothing. This is genuinely frustrating."
+    },
+    {
+      "id": "g5_angry",
+      "state": "This is completely unacceptable. Sort it out."
+    },
+    {
+      "id": "g6_very_angry",
+      "state": "Absolutely appalling service. I have wasted hours on this and nobody seems to care."
+    },
+    {
+      "id": "g7_churn",
+      "state": "I am cancelling both accounts and moving to a competitor. Tell your manager."
+    }
+  ],
+  "relations": [
+    {
+      "type": "rank",
+      "question": "frustration",
+      "variant": "levels_2",
+      "order": [
+        "g0_thanks",
+        "g1_neutral",
+        "g2_mild",
+        "g3_annoyed",
+        "g4_frustrated",
+        "g5_angry",
+        "g6_very_angry",
+        "g7_churn"
+      ],
+      "tolerance": 0.05,
+      "hypothesis": true
+    },
+    {
+      "type": "rank",
+      "question": "frustration",
+      "variant": "levels_5",
+      "order": [
+        "g0_thanks",
+        "g1_neutral",
+        "g2_mild",
+        "g3_annoyed",
+        "g4_frustrated",
+        "g5_angry",
+        "g6_very_angry",
+        "g7_churn"
+      ],
+      "tolerance": 0.05,
+      "hypothesis": true
+    },
+    {
+      "type": "rank",
+      "question": "frustration",
+      "variant": "levels_10",
+      "order": [
+        "g0_thanks",
+        "g1_neutral",
+        "g2_mild",
+        "g3_annoyed",
+        "g4_frustrated",
+        "g5_angry",
+        "g6_very_angry",
+        "g7_churn"
+      ],
+      "tolerance": 0.05,
+      "hypothesis": true
+    },
+    {
+      "type": "variant_profile",
+      "question": "frustration"
+    }
+  ]
+}

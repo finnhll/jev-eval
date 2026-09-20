@@ -1,0 +1,85 @@
+{
+  "id": "s4_numeric_levels",
+  "group": "score",
+  "title": "S4 - numeric level labels destroy a Score",
+  "doc_ref": "docs.typesafe.ai/primitives/score - 'Writing good levels'",
+  "note": "The docs claim a model that is given bare numbers as levels has nothing to match the state against. Documented: descriptive levels put the misaligned-button report at 0.0 with confidence 1.0; numeric levels give 0.55 at confidence 0.33. Reproducing this settles whether level wording is real engineering or superstition. Observed: the degradation is confined to the middle of the scale. On an unmistakable top-of-scale report, numeric levels answered 2.0 at confidence 0.97, so bare numbers cost almost nothing where the state is extreme.",
+  "variants": [
+    {
+      "id": "descriptive",
+      "questions": {
+        "bug_severity": {
+          "type": "score",
+          "instructions": "How severe is the reported issue?",
+          "criteria": [
+            "Cosmetic; no impact to functionality",
+            "Broken or degraded feature, but workaround exists",
+            "Blocking issue; no workaround exists"
+          ]
+        }
+      }
+    },
+    {
+      "id": "numeric",
+      "note": "Same question, levels reduced to their own numbers.",
+      "questions": {
+        "bug_severity": {
+          "type": "score",
+          "instructions": "Rate severity from 0 to 2, where 2 is worst",
+          "criteria": [
+            "0",
+            "1",
+            "2"
+          ]
+        }
+      }
+    }
+  ],
+  "states": [
+    {
+      "id": "misaligned",
+      "state": "The export button is misaligned by a few pixels on the settings page.",
+      "expect_by_variant": {
+        "descriptive": {
+          "bug_severity": {
+            "near": 0.0,
+            "tol": 0.15,
+            "conf_min": 0.85
+          }
+        },
+        "numeric": {
+          "bug_severity": {
+            "near": 0.55,
+            "tol": 0.25
+          }
+        }
+      }
+    },
+    {
+      "id": "nobody_can_log_in",
+      "state": "Nobody on our team can log in since this morning. We get a 500 error on every attempt.",
+      "note": "Added beyond the docs: does the numeric rubric fail at the top of the scale too, or only in the middle?"
+    }
+  ],
+  "relations": [
+    {
+      "type": "variant_gap",
+      "question": "bug_severity",
+      "metric": "confidence",
+      "variant": "numeric",
+      "than_variant": "descriptive",
+      "direction": "less",
+      "min_gap": 0.25,
+      "states": [
+        "misaligned"
+      ]
+    },
+    {
+      "type": "report",
+      "question": "bug_severity",
+      "states": [
+        "nobody_can_log_in"
+      ]
+    }
+  ]
+}

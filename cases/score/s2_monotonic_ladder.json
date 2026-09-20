@@ -1,0 +1,35 @@
+{
+  "id": "s2_monotonic_ladder",
+  "group": "score",
+  "title": "S2 - six reports built as a ladder, scored in order",
+  "note": "A dimension the docs mention but do not tabulate: how much a bug report gives an engineer to work with. Six states were written to be strictly increasing before any of them were sent. Ordering is the claim under test, not the absolute values, and it is the property a ranking or triage queue actually depends on.",
+  "questions": {
+    "report_actionability": {
+      "type": "score",
+      "instructions": "How much does this report give an engineer to work with?",
+      "criteria": [
+        "States only that something is wrong, with no detail",
+        "Names the affected feature but gives no steps or context",
+        "Describes what the user did and what happened instead",
+        "Adds environment details or exact steps to reproduce",
+        "Includes reproduction steps plus logs, versions, or a minimal example"
+      ]
+    }
+  },
+  "states": [
+    {"id": "l0_broken", "state": "It's broken."},
+    {"id": "l1_export", "state": "The export feature isn't working."},
+    {"id": "l2_clicked", "state": "I clicked Export to PDF on the reports page and nothing happened. No file, no error."},
+    {"id": "l3_steps", "state": "On Chrome 141 / macOS 15: open Reports, pick last month, click Export to PDF. The spinner runs for about 30 seconds and then the dialog closes with no file. Happens every time on two different machines."},
+    {"id": "l4_logs", "state": "On Chrome 141 / macOS 15: open Reports, pick last month, click Export to PDF. The spinner runs ~30s then the dialog closes silently. Console shows 'POST /api/export 504' and the network tab shows the request timing out at 30000ms. Started after we upgraded to 4.2.1; rolling back to 4.2.0 fixes it."},
+    {"id": "l5_minimal", "state": "Repro: curl -X POST /api/export -d '{\"range\":\"last_month\",\"format\":\"pdf\"}' returns 504 after exactly 30s on 4.2.1, and 200 in 1.2s on 4.2.0. Server log shows the PDF worker blocking on a lock acquired by the nightly rollup job. Attached: har file, server log excerpt, and a 12-line script that reproduces it against a clean install."}
+  ],
+  "relations": [
+    {
+      "type": "rank",
+      "question": "report_actionability",
+      "order": ["l0_broken", "l1_export", "l2_clicked", "l3_steps", "l4_logs", "l5_minimal"]
+    },
+    {"type": "report", "question": "report_actionability"}
+  ]
+}

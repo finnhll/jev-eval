@@ -1,0 +1,70 @@
+{
+  "id": "n1_doc_baseline",
+  "group": "noul",
+  "title": "N1 - reproduce the documented is_human_escalation values",
+  "doc_ref": "docs.typesafe.ai/primitives/noul - 'Reading a Noul' table",
+  "note": "The docs publish recorded jev-1.13.0 answers for these six states. This is the anchor for everything else: if the published numbers do not reproduce, either the model version moved or the OpenRouter gateway is altering the request, and every other measurement needs reinterpreting before it can be read.",
+  "questions": {
+    "is_human_escalation": {
+      "type": "noul",
+      "instructions": "Is the customer asking for a human agent?"
+    },
+    "is_repeat_contact": {
+      "type": "noul",
+      "instructions": "Has the customer contacted support about this before?",
+      "criteria": {
+        "true": "Mentions a prior attempt, ticket, or that they have asked before",
+        "false": "No sign of any previous contact"
+      }
+    }
+  },
+  "states": [
+    {
+      "id": "fixed_it",
+      "state": "Thanks, that fixed it!",
+      "expect": {"is_human_escalation": {"near": 0.02, "tol": 0.1}}
+    },
+    {
+      "id": "reset_password",
+      "state": "How do I reset my password?",
+      "expect": {
+        "is_human_escalation": {"near": 0.07, "tol": 0.1},
+        "is_repeat_contact": {"near": 0.07, "tol": 0.15}
+      }
+    },
+    {
+      "id": "sorted_today",
+      "state": "I need this sorted today, whatever it takes.",
+      "note": "Urgent but never asks for a person. The doc's example of a state that needs a threshold decision in code.",
+      "expect": {"is_human_escalation": {"near": 0.26, "tol": 0.12}}
+    },
+    {
+      "id": "are_you_bot",
+      "state": "Are you a bot?",
+      "note": "Hints at wanting a human without asking. The docs record an almost even split.",
+      "expect": {"is_human_escalation": {"near": 0.4, "tol": 0.15}}
+    },
+    {
+      "id": "speak_someone",
+      "state": "Is there any way to speak to someone about my invoice?",
+      "expect": {"is_human_escalation": {"near": 0.84, "tol": 0.1}}
+    },
+    {
+      "id": "asked_three_times",
+      "state": "I have asked three times now. Can I please just talk to a real person?",
+      "expect": {
+        "is_human_escalation": {"near": 0.99, "tol": 0.06},
+        "is_repeat_contact": {"near": 0.93, "tol": 0.1}
+      }
+    }
+  ],
+  "relations": [
+    {
+      "type": "rank",
+      "question": "is_human_escalation",
+      "order": ["fixed_it", "reset_password", "sorted_today", "are_you_bot",
+                "speak_someone", "asked_three_times"],
+      "note": "The ordering is the robust claim; the exact values are the strict one."
+    }
+  ]
+}

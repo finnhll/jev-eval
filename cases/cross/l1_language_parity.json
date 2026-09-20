@@ -1,0 +1,141 @@
+{
+  "id": "l1_language_parity",
+  "group": "cross",
+  "title": "L - the same tickets in English and Chinese",
+  "doc_ref": "docs.typesafe.ai/concepts/state - 'other languages, including CJK scripts, are accepted but currently have lower accuracy'",
+  "note": "Eight tickets written twice, once in English and once in Chinese, under two question sets. Three conditions come out of it: English content with English questions as the baseline, Chinese content with English questions, which is what a Chinese-language product most easily builds, and Chinese content with fully Chinese questions. The docs state the accuracy is lower without saying by how much, and the answer decides whether it is worth translating content before sending it. The Chinese variant also renames its options, which the alias table maps back so the two question sets stay comparable.",
+  "variants": [
+    {
+      "id": "en_q",
+      "questions": {
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does this message convey urgency?"
+        },
+        "department": {
+          "type": "choice",
+          "instructions": "Which team should handle this?",
+          "criteria": {
+            "returns": "Exchanges, wrong or damaged items",
+            "shipping": "Delivery status, delays, lost packages",
+            "billing": "Charges, invoices, payment problems",
+            "other": "Anything none of the other options covers"
+          }
+        },
+        "frustration": {
+          "type": "score",
+          "instructions": "How frustrated does the customer appear?",
+          "criteria": [
+            "Calm and matter-of-fact",
+            "Clearly frustrated while staying civil",
+            "Angry, or threatening to leave"
+          ]
+        }
+      }
+    },
+    {
+      "id": "zh_q",
+      "alias": {"退换货": "returns", "物流配送": "shipping", "账单支付": "billing", "其他": "other"},
+      "questions": {
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "这条消息是否表达了紧急或时间敏感？"
+        },
+        "department": {
+          "type": "choice",
+          "instructions": "这个问题应该由哪个团队处理？",
+          "criteria": {
+            "退换货": "换货、商品错误或损坏",
+            "物流配送": "配送状态、延迟、包裹丢失",
+            "账单支付": "扣款、发票、支付问题",
+            "其他": "以上选项都不覆盖的情况"
+          }
+        },
+        "frustration": {
+          "type": "score",
+          "instructions": "客户表现出多大的不满？",
+          "criteria": [
+            "平静，只是陈述事实",
+            "明显不满但仍然客气",
+            "愤怒，或威胁要终止合作"
+          ]
+        }
+      }
+    }
+  ],
+  "states": [
+    {"id": "en_wrong_size", "only_variants": ["en_q"],
+     "state": "My running shoes arrived in the wrong size. Can I swap them for a size 10?",
+     "expect": {"department": {"equals": "returns"}}},
+    {"id": "zh_wrong_size",
+     "state": "我买的跑鞋尺码不对，能换成 10 码吗？"},
+
+    {"id": "en_label_created", "only_variants": ["en_q"],
+     "state": "The tracking page has said 'label created' for nine days now. Where is my package?",
+     "expect": {"department": {"equals": "shipping"}}},
+    {"id": "zh_label_created",
+     "state": "物流信息显示「已创建面单」已经九天了，我的包裹到底在哪里？"},
+
+    {"id": "en_double_charge", "only_variants": ["en_q"],
+     "state": "I was charged $120 twice for the same order. Please reverse the duplicate charge.",
+     "expect": {"department": {"equals": "billing"}}},
+    {"id": "zh_double_charge",
+     "state": "同一笔订单被扣了两次 120 美元，请把重复扣的那笔退给我。"},
+
+    {"id": "en_outage", "only_variants": ["en_q"],
+     "state": "Our API integration started returning 500 errors about twenty minutes ago and we cannot process any customer orders until this is fixed.",
+     "expect": {"is_urgent": {"min": 0.8}}},
+    {"id": "zh_outage",
+     "state": "我们的 API 对接大约二十分钟前开始全部返回 500，在修好之前完全没办法处理客户订单。"},
+
+    {"id": "en_calm_question", "only_variants": ["en_q"],
+     "state": "Quick question - does the Pro plan include SSO?",
+     "expect": {"is_urgent": {"max": 0.2}}},
+    {"id": "zh_calm_question",
+     "state": "顺便问一下，专业版包含 SSO 吗？"},
+
+    {"id": "en_angry_churn", "only_variants": ["en_q"],
+     "state": "Three weeks, four emails, and nothing. I am cancelling both accounts and moving to a competitor.",
+     "expect": {"frustration": {"min": 1.5}}},
+    {"id": "zh_angry_churn",
+     "state": "三周，四封邮件，什么回音都没有。我要把两个账号都注销，转去用别家了。"},
+
+    {"id": "en_late_delivery", "only_variants": ["en_q"],
+     "state": "My order was supposed to arrive last Tuesday and still has not shown up.",
+     "expect": {"department": {"equals": "shipping"}}},
+    {"id": "zh_late_delivery",
+     "state": "我的订单本来上周二就该到，到现在还是没有任何消息。"},
+
+    {"id": "en_polite_refund", "only_variants": ["en_q"],
+     "state": "No rush at all, but could I get a refund for the duplicate charge when you have a moment?",
+     "expect": {"department": {"equals": "billing"}, "is_urgent": {"max": 0.3}}},
+    {"id": "zh_polite_refund",
+     "state": "不着急，不过方便的时候能帮我把重复扣的那笔退一下吗？"}
+  ],
+  "relations": [
+    {
+      "type": "state_agreement",
+      "variants": ["en_q"],
+      "pairs": [
+        ["en_wrong_size", "zh_wrong_size"],
+        ["en_label_created", "zh_label_created"],
+        ["en_double_charge", "zh_double_charge"],
+        ["en_outage", "zh_outage"],
+        ["en_calm_question", "zh_calm_question"],
+        ["en_angry_churn", "zh_angry_churn"],
+        ["en_late_delivery", "zh_late_delivery"],
+        ["en_polite_refund", "zh_polite_refund"]
+      ],
+      "note": "Condition 1 against condition 2: does switching the content to Chinese move the answer, with the questions held in English?"
+    },
+    {
+      "type": "variant_agreement",
+      "baseline": "en_q",
+      "states": ["zh_wrong_size", "zh_label_created", "zh_double_charge", "zh_outage",
+                 "zh_calm_question", "zh_angry_churn", "zh_late_delivery", "zh_polite_refund"],
+      "note": "Condition 2 against condition 3: with Chinese content fixed, does writing the questions in Chinese help or hurt?"
+    },
+    {"type": "variant_profile", "question": "department"},
+    {"type": "report", "question": "department"}
+  ]
+}

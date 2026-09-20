@@ -1,0 +1,123 @@
+{
+  "id": "p1_path_references",
+  "group": "cross",
+  "title": "P - pointing a question at one part of a structured state",
+  "doc_ref": "docs.typesafe.ai/primitives - 'Reference specific fields'",
+  "note": "A question can name a field of the state in backticks. Three things are worth knowing and only one of them is documented: that targeting works, that a question reading several fields tracks changes in all of them, and what happens when a path is wrong. The last one decides how much the mechanism can be trusted in production, because a schema change that silently redirects a question at the whole state would leave no trace in any log.",
+  "questions": {
+    "customer_requests_refund": {
+      "type": "noul",
+      "instructions": "Does `ticket.messages[0].text` request a refund?"
+    },
+    "support_requests_refund": {
+      "type": "noul",
+      "instructions": "Does `ticket.messages[1].text` request a refund?"
+    },
+    "policy_supports_refund": {
+      "type": "noul",
+      "instructions": "Does `refund_policy` support the refund requested in `ticket.messages[0].text`, given `order.charges`?"
+    },
+    "no_path_control": {
+      "type": "noul",
+      "instructions": "Does the customer request a refund?"
+    },
+    "broken_path_field": {
+      "type": "noul",
+      "instructions": "Does `order.nonexistent_field` show a duplicate payment?"
+    },
+    "broken_path_index": {
+      "type": "noul",
+      "instructions": "Does `ticket.messages[9].text` request a refund?"
+    }
+  },
+  "states": [
+    {
+      "id": "base_duplicate",
+      "note": "The documented shape: a duplicate charge, a policy that allows refunding duplicates.",
+      "state": {
+        "ticket": {
+          "subject": "Duplicate charge",
+          "messages": [
+            {"from": "customer", "text": "I was charged twice for order A-104. Please refund the duplicate."},
+            {"from": "support", "text": "We are checking the charges."}
+          ]
+        },
+        "order": {
+          "id": "A-104",
+          "charges": [
+            {"amount_usd": 49, "status": "captured"},
+            {"amount_usd": 49, "status": "captured"}
+          ]
+        },
+        "refund_policy": "Duplicate charges are eligible for a refund."
+      },
+      "expect": {
+        "customer_requests_refund": {"min": 0.85},
+        "support_requests_refund": {"max": 0.2},
+        "policy_supports_refund": {"min": 0.7},
+        "no_path_control": {"min": 0.85}
+      }
+    },
+    {
+      "id": "policy_denies",
+      "note": "Only refund_policy changed. A question that reads the policy should follow it down.",
+      "state": {
+        "ticket": {
+          "subject": "Duplicate charge",
+          "messages": [
+            {"from": "customer", "text": "I was charged twice for order A-104. Please refund the duplicate."},
+            {"from": "support", "text": "We are checking the charges."}
+          ]
+        },
+        "order": {
+          "id": "A-104",
+          "charges": [
+            {"amount_usd": 49, "status": "captured"},
+            {"amount_usd": 49, "status": "captured"}
+          ]
+        },
+        "refund_policy": "All sales are final. No refunds are issued under any circumstances."
+      },
+      "expect": {
+        "customer_requests_refund": {"min": 0.85},
+        "policy_supports_refund": {"max": 0.35}
+      }
+    },
+    {
+      "id": "single_charge",
+      "note": "Only order.charges changed: there is no duplicate to refund, so the premise fails.",
+      "state": {
+        "ticket": {
+          "subject": "Duplicate charge",
+          "messages": [
+            {"from": "customer", "text": "I was charged twice for order A-104. Please refund the duplicate."},
+            {"from": "support", "text": "We are checking the charges."}
+          ]
+        },
+        "order": {
+          "id": "A-104",
+          "charges": [{"amount_usd": 49, "status": "captured"}]
+        },
+        "refund_policy": "Duplicate charges are eligible for a refund."
+      },
+      "expect": {
+        "customer_requests_refund": {"min": 0.85},
+        "policy_supports_refund": {"max": 0.5, "hypothesis": true}
+      }
+    }
+  ],
+  "relations": [
+    {
+      "type": "rank",
+      "question": "policy_supports_refund",
+      "order": ["policy_denies", "single_charge", "base_duplicate"],
+      "note": "The policy question should be lowest where the policy forbids it and highest where everything lines up."
+    },
+    {
+      "type": "report",
+      "questions": ["broken_path_field", "broken_path_index", "no_path_control",
+                    "customer_requests_refund", "support_requests_refund",
+                    "policy_supports_refund"]
+    }
+  ]
+}

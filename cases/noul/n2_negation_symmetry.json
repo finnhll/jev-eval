@@ -1,0 +1,60 @@
+{
+  "id": "n2_negation_symmetry",
+  "group": "noul",
+  "title": "N2 - a question and its negation should add to one",
+  "doc_ref": "docs.typesafe.ai/primitives/noul - 'Writing a Noul question'",
+  "note": "The docs warn that inverted phrasing is a trap for the reader of the code, but say nothing about whether the model answers the two phrasings consistently. If p(positive) + p(negative) drifts far from 1, the value depends on how the question was worded and not only on the state, which would mean every question in a codebase has to be audited for phrasing.",
+  "questions": {
+    "pii_present": {
+      "type": "noul",
+      "instructions": "Does the message contain personal data?"
+    },
+    "pii_absent": {
+      "type": "noul",
+      "instructions": "Is the message free of personal data?"
+    }
+  },
+  "states": [
+    {
+      "id": "email_and_card",
+      "state": "My email is john.smith@acme.example and my card ends in 4471.",
+      "expect": {"pii_present": {"min": 0.85}, "pii_absent": {"max": 0.15}}
+    },
+    {
+      "id": "pure_bug_report",
+      "state": "The export button crashes the settings page in Safari.",
+      "expect": {"pii_present": {"max": 0.15}, "pii_absent": {"min": 0.85}}
+    },
+    {
+      "id": "phone_number",
+      "state": "Call me at 555-0142 after 5pm.",
+      "expect": {"pii_present": {"min": 0.8}}
+    },
+    {
+      "id": "same_city",
+      "state": "I live in the same city as your head office.",
+      "note": "Identifying only in combination with other data. Expected to sit in the middle.",
+      "expect": {"pii_present": {"band": [0.15, 0.85], "hypothesis": true}}
+    },
+    {
+      "id": "order_id_only",
+      "state": "Order A-104 arrived late.",
+      "note": "An order id is personal data under some readings and not others. A genuine boundary.",
+      "expect": {"pii_present": {"band": [0.1, 0.9], "hypothesis": true}}
+    },
+    {
+      "id": "resume_attached",
+      "state": "Attached is my resume.",
+      "note": "Refers to personal data without containing any."
+    }
+  ],
+  "relations": [
+    {
+      "type": "sum_to",
+      "questions": ["pii_present", "pii_absent"],
+      "value": 1.0,
+      "tol": 0.15
+    },
+    {"type": "report", "questions": ["pii_present", "pii_absent"]}
+  ]
+}

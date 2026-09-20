@@ -1,0 +1,44 @@
+{
+  "id": "m1_self_consistency",
+  "group": "meta",
+  "title": "M1 - the same request, five times",
+  "doc_ref": "docs.typesafe.ai/concepts/how-to-build-with-system-one - 'designed to return stable answers across repeated evaluations'",
+  "note": "Ten states covering all three question types, each request repeated five times. Every threshold in a production system assumes the answer does not wander between calls; a value that moves by 0.1 across repeats makes a 0.8 cutoff meaningless. The states deliberately include the ambiguous ones, since that is where a distribution is flattest and instability would surface first.",
+  "repeat": 5,
+  "questions": {
+    "is_urgent": {"type": "noul", "instructions": "Does this message convey urgency?"},
+    "department": {
+      "type": "choice",
+      "instructions": "Which team should handle this?",
+      "criteria": {
+        "returns": "Exchanges, wrong or damaged items",
+        "shipping": "Delivery status, delays, lost packages",
+        "billing": "Charges, invoices, payment problems"
+      }
+    },
+    "frustration": {
+      "type": "score",
+      "instructions": "How frustrated does the customer appear?",
+      "criteria": [
+        "Calm and matter-of-fact",
+        "Clearly frustrated while staying civil",
+        "Angry, or threatening to leave"
+      ]
+    }
+  },
+  "states": [
+    {"id": "clear_returns", "state": "My running shoes arrived in the wrong size. Can I swap them for a size 10?"},
+    {"id": "clear_shipping", "state": "The tracking page has said 'label created' for nine days now. Where is my package?"},
+    {"id": "clear_billing", "state": "I was charged $120 twice for the same order. Please reverse the duplicate charge."},
+    {"id": "ambiguous_three_way", "state": "Shoes arrived two weeks late and in the wrong size. Also I see two charges of $120 on my card. What are you going to do about this?"},
+    {"id": "ambiguous_partial", "state": "I paid for two pairs but only one arrived, and my card shows the full amount."},
+    {"id": "ambiguous_soaked", "state": "The courier left the box out in the rain and everything inside is soaked. I want my money back for the whole order."},
+    {"id": "borderline_urgency", "state": "Are you a bot?"},
+    {"id": "borderline_frustration", "state": "This is the second time I have had to ask about this one."},
+    {"id": "calm_question", "state": "Quick question - does the Pro plan include SSO?"},
+    {"id": "angry_churn", "state": "Three weeks, four emails, and nothing. I am cancelling both accounts and moving to a competitor."}
+  ],
+  "relations": [
+    {"type": "stability", "max_std": 0.02, "max_flip_rate": 0.0}
+  ]
+}

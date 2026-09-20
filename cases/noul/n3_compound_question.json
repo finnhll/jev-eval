@@ -1,0 +1,59 @@
+{
+  "id": "n3_compound_question",
+  "group": "noul",
+  "title": "N3 - a two-condition Noul against the two Nouls it should have been",
+  "doc_ref": "docs.typesafe.ai/primitives/noul - 'Ask one yes/no question per Noul'",
+  "note": "Four tickets spanning a 2x2 of angry and refund-seeking. The compound question is asked alongside its two atomic parts. The two matching corners tell you little; the two mixed corners are the test, because that is where a single number has to stand for two different judgments and cannot.",
+  "questions": {
+    "angry_and_refund": {
+      "type": "noul",
+      "instructions": "Is the customer angry and asking for a refund?"
+    },
+    "is_angry": {
+      "type": "noul",
+      "instructions": "Is the customer angry?"
+    },
+    "wants_refund": {
+      "type": "noul",
+      "instructions": "Does the customer request a refund?"
+    }
+  },
+  "states": [
+    {
+      "id": "angry_refund",
+      "state": "This is the third time this has broken and I am done. Refund me in full, today.",
+      "expect": {
+        "is_angry": {"min": 0.8}, "wants_refund": {"min": 0.8},
+        "angry_and_refund": {"min": 0.8}
+      }
+    },
+    {
+      "id": "angry_no_refund",
+      "state": "This is the third time this has broken. Absolutely unacceptable. Fix it properly this time.",
+      "note": "Angry, but explicitly wants a fix rather than money back.",
+      "expect": {
+        "is_angry": {"min": 0.7}, "wants_refund": {"max": 0.3},
+        "angry_and_refund": {"max": 0.3, "hypothesis": true}
+      }
+    },
+    {
+      "id": "calm_refund",
+      "state": "No problem at all, these things happen. Could I get a refund for the duplicate charge when you have a moment?",
+      "expect": {
+        "is_angry": {"max": 0.2}, "wants_refund": {"min": 0.8},
+        "angry_and_refund": {"max": 0.3, "hypothesis": true}
+      }
+    },
+    {
+      "id": "calm_no_refund",
+      "state": "Quick question - does the Pro plan include SSO?",
+      "expect": {
+        "is_angry": {"max": 0.15}, "wants_refund": {"max": 0.15},
+        "angry_and_refund": {"max": 0.15}
+      }
+    }
+  ],
+  "relations": [
+    {"type": "report", "questions": ["angry_and_refund", "is_angry", "wants_refund"]}
+  ]
+}

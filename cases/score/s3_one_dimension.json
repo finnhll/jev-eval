@@ -1,0 +1,74 @@
+{
+  "id": "s3_one_dimension",
+  "group": "score",
+  "title": "S3 - a rubric that measures three things at once",
+  "doc_ref": "docs.typesafe.ai/primitives/score - 'Keep each Score question to one dimension'",
+  "note": "The same five reports under two rubrics. The clean rubric describes detail alone. The polluted one bundles detail with politeness and urgency, which the docs say makes a state that is high on one and low on another impossible to place. Three of the five states were written to pull the dimensions apart: a rude but thorough report, a polite but empty one, and a calm report of an emergency.",
+  "variants": [
+    {
+      "id": "clean",
+      "questions": {
+        "report_quality": {
+          "type": "score",
+          "instructions": "How much detail does this report give?",
+          "criteria": [
+            "States only that something is wrong, with no detail",
+            "Describes what the user did and what happened instead",
+            "Includes exact steps, environment, and evidence such as logs"
+          ]
+        }
+      }
+    },
+    {
+      "id": "polluted",
+      "questions": {
+        "report_quality": {
+          "type": "score",
+          "instructions": "How good is this report?",
+          "criteria": [
+            "Vague, impolite, and not urgent",
+            "Somewhat detailed, reasonably polite, and moderately urgent",
+            "Detailed and polite and urgent"
+          ]
+        }
+      }
+    }
+  ],
+  "states": [
+    {
+      "id": "rude_but_thorough",
+      "state": "Whoever wrote this export code should be ashamed. Chrome 141 / macOS 15, click Export to PDF on Reports, POST /api/export returns 504 after exactly 30s. Works on 4.2.0, broken on 4.2.1. Logs attached. Fix it."
+    },
+    {
+      "id": "polite_but_empty",
+      "state": "Hi team, hope you're having a lovely week! Just a gentle note that something seems a little off with the export. No rush at all. Thank you so much for everything you do!"
+    },
+    {
+      "id": "calm_emergency",
+      "state": "Noting for the record that all logins have been failing since 09:15 UTC with a 500 from /api/session. Roughly 4,000 users affected. Happy to provide more detail if useful."
+    },
+    {
+      "id": "plain_vague",
+      "state": "It's broken."
+    },
+    {
+      "id": "plain_detailed",
+      "state": "On Chrome 141 / macOS 15: open Reports, pick last month, click Export to PDF. Console shows 'POST /api/export 504' after 30s. Started on 4.2.1; 4.2.0 is fine."
+    }
+  ],
+  "relations": [
+    {
+      "type": "variant_gap",
+      "question": "report_quality",
+      "metric": "confidence",
+      "variant": "polluted",
+      "than_variant": "clean",
+      "direction": "less",
+      "min_gap": 0.15,
+      "states": ["rude_but_thorough", "polite_but_empty", "calm_emergency"],
+      "hypothesis": true
+    },
+    {"type": "variant_profile", "question": "report_quality"},
+    {"type": "report", "question": "report_quality"}
+  ]
+}

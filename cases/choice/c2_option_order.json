@@ -1,0 +1,80 @@
+{
+  "id": "c2_option_order",
+  "group": "choice",
+  "title": "C2 - shuffling the options must not move the distribution",
+  "note": "The same question with its criteria map written in three different key orders. Nothing about the judgment changed, so nothing about the distribution should. If order matters anywhere it will show on the ambiguous state, where probability is genuinely split and a tie-break has something to bite on. Result: the two unambiguous states are perfectly order-invariant (TV 0.000). The ambiguous one is not. Across three orderings the winning option held at 'returns', but its probability moved 0.62 -> 0.48 -> 0.58 and confidence moved 0.43 -> 0.22 -> 0.37, a TV distance of 0.14. The selected answer is stable; the number a confidence gate reads is not. Code that routes on a threshold near 0.3 would send the same ticket down different paths depending only on the order the criteria dict was written in.",
+  "variants": [
+    {
+      "id": "order_rsb",
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which team should handle this?",
+          "criteria": {
+            "returns": "Exchanges, wrong or damaged items",
+            "shipping": "Delivery status, delays, lost packages",
+            "billing": "Charges, invoices, payment problems"
+          }
+        }
+      }
+    },
+    {
+      "id": "order_bsr",
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which team should handle this?",
+          "criteria": {
+            "billing": "Charges, invoices, payment problems",
+            "shipping": "Delivery status, delays, lost packages",
+            "returns": "Exchanges, wrong or damaged items"
+          }
+        }
+      }
+    },
+    {
+      "id": "order_sbr",
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which team should handle this?",
+          "criteria": {
+            "shipping": "Delivery status, delays, lost packages",
+            "billing": "Charges, invoices, payment problems",
+            "returns": "Exchanges, wrong or damaged items"
+          }
+        }
+      }
+    }
+  ],
+  "states": [
+    {
+      "id": "clear_returns",
+      "state": "My running shoes arrived in the wrong size. Can I swap them for a size 10?"
+    },
+    {
+      "id": "mid_billing",
+      "state": "I cancelled last month but there is still a charge on my statement this month."
+    },
+    {
+      "id": "ambiguous_three_way",
+      "state": "Shoes arrived two weeks late and in the wrong size. Also I see two charges of $120 on my card. What are you going to do about this?"
+    }
+  ],
+  "relations": [
+    {
+      "type": "dist_close",
+      "question": "department",
+      "max_tv": 0.05
+    },
+    {
+      "type": "answers_match",
+      "question": "department",
+      "field": "choice"
+    },
+    {
+      "type": "variant_profile",
+      "question": "department"
+    }
+  ]
+}

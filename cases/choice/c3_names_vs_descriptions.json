@@ -1,0 +1,70 @@
+{
+  "id": "c3_names_vs_descriptions",
+  "group": "choice",
+  "title": "C3 - how much work do option names do, and how much the descriptions",
+  "doc_ref": "docs.typesafe.ai/primitives/choice - the tone question uses null descriptions",
+  "note": "Three ways to write the same three options. Opaque names keep the descriptions and throw the names away; null descriptions keep the names and throw the descriptions away. Whichever variant collapses is the one carrying the signal. The docs imply names alone suffice when they are self-explanatory, and this measures the size of 'suffice'. Opaque option names are mapped back through an alias so all three variants stay comparable.",
+  "variants": [
+    {
+      "id": "named_described",
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which team should handle this?",
+          "criteria": {
+            "returns": "Exchanges, wrong or damaged items",
+            "shipping": "Delivery status, delays, lost packages",
+            "billing": "Charges, invoices, payment problems"
+          }
+        }
+      }
+    },
+    {
+      "id": "opaque_described",
+      "alias": {"opt_a": "returns", "opt_b": "shipping", "opt_c": "billing"},
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which team should handle this?",
+          "criteria": {
+            "opt_a": "Exchanges, wrong or damaged items",
+            "opt_b": "Delivery status, delays, lost packages",
+            "opt_c": "Charges, invoices, payment problems"
+          }
+        }
+      }
+    },
+    {
+      "id": "named_null",
+      "questions": {
+        "department": {
+          "type": "choice",
+          "instructions": "Which team should handle this?",
+          "criteria": {"returns": null, "shipping": null, "billing": null}
+        }
+      }
+    }
+  ],
+  "states": [
+    {
+      "id": "clear_returns",
+      "state": "My running shoes arrived in the wrong size. Can I swap them for a size 10?",
+      "expect": {"department": {"equals": "returns"}}
+    },
+    {
+      "id": "clear_shipping",
+      "state": "The tracking page has said 'label created' for nine days now. Where is my package?",
+      "expect": {"department": {"equals": "shipping"}}
+    },
+    {
+      "id": "ambiguous_three_way",
+      "state": "Shoes arrived two weeks late and in the wrong size. Also I see two charges of $120 on my card. What are you going to do about this?"
+    }
+  ],
+  "relations": [
+    {"type": "variant_agreement", "baseline": "named_described"},
+    {"type": "variant_profile", "question": "department"},
+    {"type": "answers_match", "question": "department", "field": "choice",
+     "states": ["clear_returns", "clear_shipping"]}
+  ]
+}
