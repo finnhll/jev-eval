@@ -1,6 +1,7 @@
 # Findings
 
-One full run: 282 responses, 21 experiments, `typesafe/jev-1.13-20260917` via OpenRouter,
+One full run: 282 trials, 21 experiments, of which 281 were answered and one shape was
+rejected on purpose (see M4), `typesafe/jev-1.13-20260917` via OpenRouter,
 2026-09-20. Every number below is reproducible from `results/raw.jsonl` with
 `python3 cli.py check`, without an API key.
 

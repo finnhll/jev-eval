@@ -13,7 +13,8 @@ Standard library only. No install step, no dependencies.
 ## Results
 
 One full run of 21 experiments is committed, raw responses included, so every claim below can be
-re-derived with `python3 cli.py check` and no API key. Full write-up in
+re-derived with `python3 cli.py check` and no API key. 282 trials: 281 answered, one shape
+rejected on purpose. Full write-up in
 [FINDINGS.md](FINDINGS.md).
 
 | | |
@@ -149,7 +150,7 @@ results/raw.jsonl       every response, with its request
 
 ## Reproducing the committed run
 
-`results/raw.jsonl` holds all 282 responses next to the exact request that produced each one.
+`results/raw.jsonl` holds all 282 trials next to the exact request that produced each one.
 `python3 cli.py check` reads that file and calls nothing, so the analysis can be re-run, the
 thresholds revised, and the metrics rewritten without an API key and without spending anything.
 `python3 cli.py collect` against a live key appends new trials beside the old ones.
