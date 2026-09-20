@@ -5,3 +5,6 @@ __pycache__/
 # Generated from results/raw.jsonl by `python3 cli.py report`.
 # The raw responses are committed; the rendering is not.
 results/report.html
+
+# Local editor/agent config, and the convenience env file it points at.
+.claude/

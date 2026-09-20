@@ -4,7 +4,9 @@
     python3 cli.py plan                 what would run, and what it costs
     python3 cli.py collect              call the API, append to results/raw.jsonl
     python3 cli.py check                evaluate what was collected (offline)
-    python3 cli.py report --out r.html  write the HTML report
+    python3 cli.py report --out r.html  write the static HTML report
+    python3 cli.py build-ui             regenerate the web UI's data file
+    python3 cli.py serve                serve the UI locally, with live API access
 
 Collect once, check many times. Every check reads the stored responses, so
 thresholds and metrics can be reworked without spending another call.
@@ -165,6 +167,26 @@ def _trim(findings: Sequence[Dict[str, Any]], keep_passing: int = 3,
     return out
 
 
+def cmd_build_ui(args: argparse.Namespace) -> int:
+    import uidata  # local module
+
+    cases = load(args)
+    store = ResultStore(args.results)
+    if not store.records:
+        print("no results in %s - run collect first" % args.results, file=sys.stderr)
+        return 2
+    path = uidata.write(cases, store.records, args.out)
+    size = os.path.getsize(path) / 1024.0
+    print("wrote %s (%.0f KB, %d cases)" % (path, size, len(cases)))
+    return 0
+
+
+def cmd_serve(args: argparse.Namespace) -> int:
+    import serve  # local module
+
+    return serve.main(args)
+
+
 def cmd_report(args: argparse.Namespace) -> int:
     from report import write_report  # local module
 
@@ -210,6 +232,19 @@ def main(argv: Sequence[str] = None) -> int:
                        help="write the HTML report")
     r.add_argument("--out", default="results/report.html")
     r.set_defaults(fn=cmd_report)
+
+    b = sub.add_parser("build-ui", parents=[common],
+                       help="regenerate the web UI's data file")
+    b.add_argument("--out", default="docs/data.json")
+    b.set_defaults(fn=cmd_build_ui)
+
+    s = sub.add_parser("serve", parents=[common],
+                       help="serve the UI locally, with live API access")
+    s.add_argument("--port", type=int, default=8787)
+    s.add_argument("--model", default=DEFAULT_MODEL)
+    s.add_argument("--out", default="docs/data.json")
+    s.add_argument("--no-browser", action="store_true")
+    s.set_defaults(fn=cmd_serve)
 
     args = p.parse_args(argv)
     return args.fn(args)

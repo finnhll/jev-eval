@@ -1,0 +1,196 @@
+/* Colour roles come from the data-viz reference palette. The three categorical
+   slots and the status four were validated with the skill's checker in both
+   modes; light-mode aqua sits below 3:1 on the surface, so every chart that
+   uses it also carries direct labels and a table view. */
+:root {
+  color-scheme: light;
+  --surface-0: #ffffff;
+  --surface-1: #fcfcfb;
+  --surface-2: #f4f4f1;
+  --line: #e4e3df;
+  --line-strong: #cfceca;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #85847e;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --accent: #2a78d6;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface-0: #14161a;
+    --surface-1: #1a1a19;
+    --surface-2: #212328;
+    --line: #2c3037;
+    --line-strong: #3d424b;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #8f8f88;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --accent: #3987e5;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #14161a;
+  --surface-1: #1a1a19;
+  --surface-2: #212328;
+  --line: #2c3037;
+  --line-strong: #3d424b;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #8f8f88;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --accent: #3987e5;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--surface-0); color: var(--text-primary);
+  font: 15px/1.6 var(--sans); -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); }
+
+/* ---------- shell ---------- */
+.shell { display: grid; grid-template-columns: 250px 1fr; min-height: 100%; }
+.side {
+  border-right: 1px solid var(--line); background: var(--surface-1);
+  padding: 18px 12px 40px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.brand { display: flex; align-items: baseline; gap: 8px; padding: 0 10px 14px; }
+.brand b { font-size: 16px; letter-spacing: -0.01em; }
+.brand span { font: 11px var(--mono); color: var(--text-muted); }
+.navgroup { margin: 14px 0 4px; padding: 0 10px; font: 600 10.5px var(--sans);
+  letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); }
+.nav { display: block; width: 100%; text-align: left; background: none; border: 0;
+  color: var(--text-secondary); font: inherit; padding: 6px 10px; border-radius: 7px;
+  cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.nav:hover { background: var(--surface-2); color: var(--text-primary); }
+.nav[aria-current="true"] { background: var(--surface-2); color: var(--text-primary); font-weight: 600; }
+.nav .cid { font: 11px var(--mono); color: var(--text-muted); margin-left: auto; }
+/* A grid item's automatic minimum is its content, so a wide table would
+   stretch this column past the viewport. min-width:0 lets it shrink and the
+   table scroll inside .tablewrap instead of the page scrolling sideways. */
+.main { padding: 28px 32px 80px; max-width: 1100px; min-width: 0; }
+.tablewrap { overflow-x: auto; margin: 8px 0 6px; }
+.tablewrap table { margin: 0; }
+
+/* ---------- typography ---------- */
+h1 { font-size: 25px; letter-spacing: -0.02em; margin: 0 0 4px; }
+h2 { font-size: 17px; margin: 34px 0 10px; letter-spacing: -0.01em; }
+h3 { font-size: 14px; margin: 22px 0 8px; color: var(--text-secondary); }
+.lede { color: var(--text-secondary); margin: 0 0 22px; font-size: 14px; }
+.note { color: var(--text-secondary); font-size: 13.5px; max-width: 76ch; margin: 8px 0 16px; }
+.docref { font: 11.5px var(--mono); color: var(--text-muted); margin: 0 0 10px; }
+code { font: 12.5px var(--mono); background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+
+/* ---------- tiles ---------- */
+.tiles { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin: 18px 0 8px; }
+.tile { background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--radius); padding: 13px 15px; }
+.tile .n { font-size: 25px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.2; }
+.tile .l { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+.tile .s { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.n.good { color: var(--good); } .n.critical { color: var(--critical); }
+.n.warning { color: #a0700a; } .n.muted { color: var(--text-secondary); }
+:root[data-theme="dark"] .n.warning, :root:not([data-theme="light"]) .n.warning { color: var(--warning); }
+
+/* ---------- tags ---------- */
+.tag { display: inline-flex; align-items: center; gap: 4px; font: 600 10.5px var(--mono);
+  padding: 2px 7px; border-radius: 5px; letter-spacing: .04em; white-space: nowrap; }
+.tag.pass { color: var(--good); background: color-mix(in srgb, var(--good) 13%, transparent); }
+.tag.fail { color: var(--critical); background: color-mix(in srgb, var(--critical) 15%, transparent); }
+.tag.warn { color: #8a6000; background: color-mix(in srgb, var(--warning) 22%, transparent); }
+.tag.info { color: var(--text-secondary); background: var(--surface-2); }
+:root[data-theme="dark"] .tag.warn, :root:not([data-theme="light"]) .tag.warn { color: var(--warning); }
+
+/* ---------- tables ---------- */
+table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 8px 0 6px; }
+th { text-align: left; font: 600 10.5px var(--sans); letter-spacing: .05em; text-transform: uppercase;
+  color: var(--text-muted); padding: 7px 9px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 7px 9px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:hover td { background: var(--surface-1); }
+td.mono, th.mono { font: 12px var(--mono); }
+td.muted { color: var(--text-muted); }
+td.num { text-align: right; font: 12px var(--mono); font-variant-numeric: tabular-nums; }
+td.wrap { max-width: 42ch; }
+
+/* probability bar inside a table cell: magnitude, labelled, never colour alone */
+.pbar { display: flex; align-items: center; gap: 7px; }
+.pbar .track { flex: 1 1 60px; min-width: 54px; height: 7px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.pbar .fill { height: 100%; border-radius: 4px; background: var(--series-1); }
+.pbar .v { font: 12px var(--mono); font-variant-numeric: tabular-nums; color: var(--text-secondary); min-width: 34px; text-align: right; }
+.pbar.is-pick .v { color: var(--text-primary); font-weight: 600; }
+.pbar.is-pick .fill { background: var(--series-1); }
+
+/* ---------- cards & charts ---------- */
+.card { background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 16px 18px; margin: 14px 0; }
+.card > h3 { margin-top: 0; color: var(--text-primary); font-size: 14px; }
+.card .cap { color: var(--text-secondary); font-size: 12.5px; margin: 0 0 10px; max-width: 76ch; }
+.chart { width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 2px 0 10px; font-size: 12px; color: var(--text-secondary); }
+.legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; margin-right: 6px; vertical-align: -1px; }
+.tip { position: fixed; z-index: 50; pointer-events: none; background: var(--surface-0);
+  border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; font-size: 12.5px;
+  box-shadow: var(--shadow); opacity: 0; transition: opacity .1s; max-width: 280px; }
+.tip.on { opacity: 1; }
+.tip b { display: block; font-size: 12px; margin-bottom: 2px; }
+.tip .row { font: 12px var(--mono); color: var(--text-secondary); }
+
+/* ---------- controls ---------- */
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 14px 0; }
+select, input[type="search"], input[type="text"], textarea, button.btn {
+  font: inherit; color: var(--text-primary); background: var(--surface-1);
+  border: 1px solid var(--line-strong); border-radius: 8px; padding: 6px 10px;
+}
+textarea { font: 12.5px/1.55 var(--mono); width: 100%; resize: vertical; }
+input[type="search"] { min-width: 220px; }
+button.btn { cursor: pointer; }
+button.btn:hover { background: var(--surface-2); }
+button.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+button.btn.primary:hover { filter: brightness(1.08); }
+button.btn:disabled { opacity: .5; cursor: default; }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
+.seg button { background: var(--surface-1); border: 0; border-right: 1px solid var(--line);
+  padding: 6px 11px; font: inherit; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--text-primary); font-weight: 600; }
+
+details.raw { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; margin: 10px 0; background: var(--surface-1); }
+details.raw summary { cursor: pointer; font-size: 13px; color: var(--text-secondary); }
+pre { font: 12px/1.5 var(--mono); background: var(--surface-2); padding: 12px; border-radius: 8px;
+  overflow: auto; max-height: 460px; margin: 8px 0; }
+.empty { color: var(--text-muted); font-size: 13.5px; padding: 28px 0; }
+.banner { border: 1px solid var(--line-strong); background: var(--surface-1); border-radius: var(--radius);
+  padding: 12px 15px; margin: 14px 0; font-size: 13.5px; color: var(--text-secondary); }
+.banner b { color: var(--text-primary); }
+
+/* ---------- responsive ---------- */
+.menu-btn { display: none; }
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .side { position: fixed; inset: 0 auto 0 0; width: 260px; transform: translateX(-100%);
+    transition: transform .18s; z-index: 40; box-shadow: var(--shadow); }
+  .side.open { transform: none; }
+  .main { padding: 16px; }
+  .menu-btn { display: inline-flex; }
+  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 30; }
+}

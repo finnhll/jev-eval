@@ -42,6 +42,35 @@ python3 cli.py report --out results/report.html
 
 A full run is 282 calls, about 70 seconds and under a cent.
 
+## The UI
+
+Two ways in, same data:
+
+```bash
+python3 cli.py serve      # http://127.0.0.1:8787 — everything, including the playground
+open docs/index.html      # static: the results, no API access
+```
+
+`docs/` is a dependency-free page that reads `docs/data.json`, built from the same raw
+responses and the same check engine the CLI uses, so it can never disagree with
+`python3 cli.py check`. It has four views:
+
+- **Overview** — headline counts, and every expectation that did not hold
+- **Case detail** — the note explaining what the experiment is for, its findings, a chart where
+  one helps, and every answer with its probability distribution
+- **Analysis** — the charts that answer a question on their own, pulled out of their cases
+- **Raw responses** — every stored answer, filterable, with the JSON behind each one
+
+`cli.py serve` adds what a static page cannot do: a **playground** for asking Jev your own
+questions, and a per-case **re-run** button. The key is read from the environment on the server
+side and never reaches the browser; the server binds to loopback only and refuses cross-origin
+requests. Rebuild the static data after collecting new trials with `python3 cli.py build-ui`.
+
+The charts follow a validated palette — three categorical hues checked for colour-vision
+separation in both light and dark mode. Light-mode aqua sits below 3:1 against the surface, so
+every chart that uses it also carries direct labels and a table view rather than relying on
+colour alone.
+
 ## Why collection and analysis are separate
 
 `collect` writes every response to `results/raw.jsonl` next to the exact request that produced
@@ -102,7 +131,10 @@ being quietly tuned until everything passes.
 ## Layout
 
 ```
-cli.py                  plan / collect / check / report
+cli.py                  plan / collect / check / report / build-ui / serve
+serve.py                local server: static UI plus the live API endpoints
+docs/                   the web UI (also what GitHub Pages serves)
+uidata.py               builds docs/data.json from the raw responses
 report.py               HTML report
 jev/client.py           Decisions API client, also usable standalone
 jev/cases.py            case schema, validation, expansion into trials
