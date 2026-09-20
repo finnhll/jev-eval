@@ -15,33 +15,93 @@
     }
   },
   "states": [
-    {"id": "t_pipelines", "state": "I spent two years building ETL pipelines in Python at a logistics company."},
-    {"id": "t_django", "state": "At my last role I maintained a Django service handling payments."},
-    {"id": "t_scripts_work", "state": "Part of my job at Acme was writing Python scripts to automate our weekly reporting."},
-    {"id": "t_ml", "state": "I trained and deployed recommendation models in Python for an e-commerce team."},
-    {"id": "t_devops", "state": "As an SRE I wrote Python tooling for our deployment pipeline."},
-    {"id": "t_consultant", "state": "As an independent consultant I delivered three client projects in Python during 2023."},
-    {"id": "t_qa", "state": "I built our test automation framework in Python while working at a fintech."},
-    {"id": "t_research_job", "state": "I was employed as a research engineer and used Python daily for simulations."},
-    {"id": "t_mixed_stack", "state": "My team's stack was Java on the backend with Python for all our data tooling, which I owned."},
-    {"id": "t_taught_class", "state": "I taught an introductory Python class at a community college for two semesters.",
-     "note": "Boundary: a paid role in which Python was used, but not as an engineer."},
-    {"id": "f_java_only", "state": "My experience is in Java and Go. I have not used Python."},
-    {"id": "f_skills_list", "state": "Skills: Java, Kotlin, SQL, Python, Docker, Kubernetes.",
-     "note": "Boundary: listed as a skill with no claim of having used it anywhere."},
-    {"id": "f_coursework", "state": "I took two university courses that used Python for numerical methods.",
-     "note": "Boundary: real use, not paid."},
-    {"id": "f_bootcamp", "state": "I completed a twelve-week data science bootcamp taught entirely in Python.",
-     "note": "Boundary: substantial use, not paid."},
-    {"id": "f_hobby", "state": "I write Python on weekends for a hobby project that scrapes cycling results.",
-     "note": "Boundary: skilled use, explicitly outside work."},
-    {"id": "f_want_to_learn", "state": "I am currently learning Python in the evenings and hope to use it professionally."},
-    {"id": "f_adjacent_pm", "state": "I worked alongside a Python team as a product manager but did not write code myself.",
-     "note": "Boundary: Python at work, but not the candidate's."},
-    {"id": "f_c_only", "state": "Fifteen years of embedded C and C++ across automotive suppliers."},
-    {"id": "f_open_source", "state": "I contribute to an open-source Python library in my spare time.",
-     "note": "Boundary: serious use, unpaid."},
-    {"id": "f_intern_java", "state": "During my internship I worked on a Java codebase; I had learned Python at university."}
+    {
+      "id": "t_pipelines",
+      "state": "I spent two years building ETL pipelines in Python at a logistics company."
+    },
+    {
+      "id": "t_django",
+      "state": "At my last role I maintained a Django service handling payments."
+    },
+    {
+      "id": "t_scripts_work",
+      "state": "Part of my job at Acme was writing Python scripts to automate our weekly reporting."
+    },
+    {
+      "id": "t_ml",
+      "state": "I trained and deployed recommendation models in Python for an e-commerce team."
+    },
+    {
+      "id": "t_devops",
+      "state": "As an SRE I wrote Python tooling for our deployment pipeline."
+    },
+    {
+      "id": "t_consultant",
+      "state": "As an independent consultant I delivered three client projects in Python during 2023."
+    },
+    {
+      "id": "t_qa",
+      "state": "I built our test automation framework in Python while working at a fintech."
+    },
+    {
+      "id": "t_research_job",
+      "state": "I was employed as a research engineer and used Python daily for simulations."
+    },
+    {
+      "id": "t_mixed_stack",
+      "state": "My team's stack was Java on the backend with Python for all our data tooling, which I owned."
+    },
+    {
+      "id": "t_taught_class",
+      "state": "I taught an introductory Python class at a community college for two semesters.",
+      "note": "Boundary: a paid role in which Python was used, but not as an engineer."
+    },
+    {
+      "id": "f_java_only",
+      "state": "My experience is in Java and Go. I have not used Python."
+    },
+    {
+      "id": "f_skills_list",
+      "state": "Skills: Java, Kotlin, SQL, Python, Docker, Kubernetes.",
+      "note": "Boundary: listed as a skill with no claim of having used it anywhere."
+    },
+    {
+      "id": "f_coursework",
+      "state": "I took two university courses that used Python for numerical methods.",
+      "note": "Boundary: real use, not paid."
+    },
+    {
+      "id": "f_bootcamp",
+      "state": "I completed a twelve-week data science bootcamp taught entirely in Python.",
+      "note": "Boundary: substantial use, not paid."
+    },
+    {
+      "id": "f_hobby",
+      "state": "I write Python on weekends for a hobby project that scrapes cycling results.",
+      "note": "Boundary: skilled use, explicitly outside work."
+    },
+    {
+      "id": "f_want_to_learn",
+      "state": "I am currently learning Python in the evenings and hope to use it professionally."
+    },
+    {
+      "id": "f_adjacent_pm",
+      "state": "I worked alongside a Python team as a product manager but did not write code myself.",
+      "note": "Boundary: Python at work, but not the candidate's."
+    },
+    {
+      "id": "f_c_only",
+      "state": "Fifteen years of embedded C and C++ across automotive suppliers."
+    },
+    {
+      "id": "f_open_source",
+      "state": "I contribute to an open-source Python library in my spare time.",
+      "note": "Boundary: serious use, unpaid."
+    },
+    {
+      "id": "f_intern_java",
+      "state": "During my internship I worked on a Java codebase; I had learned Python at university."
+    }
   ],
   "relations": [
     {
@@ -49,15 +109,58 @@
       "question": "used_python_at_work",
       "bins": 5,
       "labels": {
-        "t_pipelines": true, "t_django": true, "t_scripts_work": true, "t_ml": true,
-        "t_devops": true, "t_consultant": true, "t_qa": true, "t_research_job": true,
-        "t_mixed_stack": true, "t_taught_class": true,
-        "f_java_only": false, "f_skills_list": false, "f_coursework": false,
-        "f_bootcamp": false, "f_hobby": false, "f_want_to_learn": false,
-        "f_adjacent_pm": false, "f_c_only": false, "f_open_source": false,
+        "t_pipelines": true,
+        "t_django": true,
+        "t_scripts_work": true,
+        "t_ml": true,
+        "t_devops": true,
+        "t_consultant": true,
+        "t_qa": true,
+        "t_research_job": true,
+        "t_mixed_stack": true,
+        "t_taught_class": true,
+        "f_java_only": false,
+        "f_skills_list": false,
+        "f_coursework": false,
+        "f_bootcamp": false,
+        "f_hobby": false,
+        "f_want_to_learn": false,
+        "f_adjacent_pm": false,
+        "f_c_only": false,
+        "f_open_source": false,
         "f_intern_java": false
       }
     },
-    {"type": "report", "question": "used_python_at_work"}
+    {
+      "type": "threshold_sweep",
+      "question": "used_python_at_work",
+      "labels": {
+        "t_pipelines": true,
+        "t_django": true,
+        "t_scripts_work": true,
+        "t_ml": true,
+        "t_devops": true,
+        "t_consultant": true,
+        "t_qa": true,
+        "t_research_job": true,
+        "t_mixed_stack": true,
+        "t_taught_class": true,
+        "f_java_only": false,
+        "f_skills_list": false,
+        "f_coursework": false,
+        "f_bootcamp": false,
+        "f_hobby": false,
+        "f_want_to_learn": false,
+        "f_adjacent_pm": false,
+        "f_c_only": false,
+        "f_open_source": false,
+        "f_intern_java": false
+      },
+      "note": "What each candidate cutoff would have decided on these twenty states."
+    },
+    {
+      "type": "report",
+      "question": "used_python_at_work"
+    }
   ]
 }

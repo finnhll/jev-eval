@@ -114,6 +114,16 @@ option.** Confidence will not warn you that your taxonomy has a hole.
   **0.95** [0.85, 1.00], ECE 0.094. The single miss was the case that is genuinely arguable —
   "taught an introductory Python class at a community college", returned 0.45. Twenty samples
   cannot establish calibration; this shows no large systematic bias, nothing more.
+- **Where the cutoff goes matters more than which cutoff.** Sweeping the two-way cutoff over
+  these twenty states, accuracy is flat at 0.95 anywhere from 0.50 to 0.70 and falls to 0.85 by
+  0.95 — the choice barely matters until it starts cutting off true positives. A three-way band
+  does better than any single cutoff: 0.30–0.70 decides 90% of the states automatically with
+  **zero** wrong decisions, sending the two genuinely arguable ones to a person. A single 0.50
+  cutoff decides everything and gets one wrong.
+- **A cutoff placed on the data flips on rounding.** The `is_urgent` question returns 0.82 on
+  nine of ten repeats of one state and 0.80 on the tenth. A `noul > 0.80` test disagrees with
+  itself once in ten calls — not model instability (repeat sd is ≤ 0.0075) but a cutoff sitting
+  where the probability mass is.
 
 ### Choice
 

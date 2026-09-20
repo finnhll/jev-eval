@@ -1,4 +1,4 @@
-import { ladder, groupedBars, reliability, probBar, legend } from "./charts.js";
+import { ladder, groupedBars, reliability, multiLine, probBar, legend } from "./charts.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const STATUS = ["fail", "warn", "pass", "info"];
@@ -246,6 +246,9 @@ function caseCharts(cs) {
         `${f.detail}. The states were written in this order before any of them were sent.`,
         (host) => ladder(host, { points, yLabel: f.question })));
     }
+    if (f.check === "threshold_sweep" && f.rows) {
+      cards.push(thresholdCard(f));
+    }
     if (f.check === "calibration") {
       const bins = cs.findings.find((x) => x.check === "calibration")?.bins;
       if (bins) {
@@ -326,6 +329,65 @@ function caseCharts(cs) {
   return cards;
 }
 
+/** The sweep: a chart of what each cutoff decides, then the two tables. */
+function thresholdCard(f) {
+  const rows = f.rows;
+  const node = h("div", { class: "card" },
+    h("h3", {}, "Where to put the cutoff"),
+    h("p", { class: "cap" },
+      "A Noul returns a probability and leaves the yes/no to your code. Each row is one " +
+      "candidate cutoff applied to the labelled states. " + f.detail));
+  node.append(legend(["accuracy", "precision", "recall"]));
+  const host = h("div", { class: "chart" });
+  node.append(host);
+  multiLine(host, {
+    x: rows.map((r) => r.threshold),
+    series: [
+      { label: "accuracy", values: rows.map((r) => r.accuracy) },
+      { label: "precision", values: rows.map((r) => r.precision) },
+      { label: "recall", values: rows.map((r) => r.recall) },
+    ],
+    xLabel: "cutoff (predict yes when value ≥ cutoff)",
+  });
+
+  node.append(h("h3", {}, "Two-way cutoff"));
+  node.append(tbl(
+    h("tr", {}, h("th", {}, "cutoff"), h("th", {}, "accuracy"), h("th", {}, "precision"),
+      h("th", {}, "recall"), h("th", {}, "false yes"), h("th", {}, "missed yes")),
+    ...rows.map((r) => h("tr", {},
+      h("td", { class: "num" }, fmt(r.threshold, 2)),
+      h("td", { class: "num" }, fmt(r.accuracy, 2)),
+      h("td", { class: "num" }, fmt(r.precision, 2)),
+      h("td", { class: "num" }, fmt(r.recall, 2)),
+      h("td", { class: "num" }, r.fp),
+      h("td", { class: "num" }, r.fn)))));
+
+  if (f.bands) {
+    node.append(h("h3", {}, "Three-way band, with a review lane"));
+    node.append(h("p", { class: "cap" },
+      "Below the low edge is an automatic no, at or above the high edge an automatic yes, " +
+      "and everything between goes to a person. The number worth optimising is accuracy on " +
+      "the part you decide automatically, read next to how much you hand over."));
+    node.append(tbl(
+      h("tr", {}, h("th", {}, "band"), h("th", {}, "decided automatically"),
+        h("th", {}, "accuracy when decided"), h("th", {}, "sent to review"),
+        h("th", {}, "wrong decisions")),
+      ...f.bands.map((b) => h("tr", {},
+        h("td", { class: "num" }, `${fmt(b.lo, 2)} – ${fmt(b.hi, 2)}`),
+        h("td", { class: "num" }, fmt(100 * b.coverage, 0) + "%"),
+        h("td", { class: "num" }, fmt(b.auto_accuracy, 2)),
+        h("td", { class: "num" }, b.review),
+        h("td", { class: "num" }, b.errors)))));
+  }
+
+  if (f.values) {
+    node.append(h("p", { class: "cap" },
+      "Observed values, so a cutoff can be placed in a gap rather than on top of the data: " +
+      f.values.map((v) => fmt(v, 2)).join("  ")));
+  }
+  return node;
+}
+
 // ------------------------------------------------------------------ analysis
 
 function viewAnalysis() {
@@ -334,7 +396,7 @@ function viewAnalysis() {
     h("p", { class: "lede" },
       "The charts that answer a question on their own, pulled out of their cases."));
   const picks = [
-    ["n4_calibration", "Do the probabilities mean what they claim?"],
+    ["n4_calibration", "Do the probabilities mean what they claim, and where should the cutoff go?"],
     ["c2_option_order", "Does the order of the options matter?"],
     ["m3_latency_scaling", "What does an extra question cost in time?"],
     ["m2_batching_gain", "What does batching actually buy?"],

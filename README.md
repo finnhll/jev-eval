@@ -106,8 +106,34 @@ brittle; an ordering over six states, a confidence gap between a clear and an am
 or agreement across three phrasings of the same question is not.
 
 Available relations: `rank`, `sum_to`, `mean_gap`, `dist_close`, `answers_match`, `variant_gap`,
-`stability`, `calibration`, `confidence_auroc`, `variant_profile`, `variant_agreement`,
-`state_agreement`, `batching_gain`, `latency_profile`, `expect_error`, `report`.
+`stability`, `calibration`, `threshold_sweep`, `confidence_auroc`, `variant_profile`,
+`variant_agreement`, `state_agreement`, `batching_gain`, `latency_profile`, `expect_error`,
+`report`.
+
+### Choosing a Noul cutoff
+
+A Noul returns a probability and leaves the yes/no to your code. `threshold_sweep` turns that
+choice into a table rather than a guess — give it labelled states and it reports, for every
+candidate cutoff, what your code would have decided and how often it would have been right:
+
+```json
+{
+  "type": "threshold_sweep",
+  "question": "used_python_at_work",
+  "labels": {"t_pipelines": true, "f_hobby": false, "...": false}
+}
+```
+
+It reports two things. A **two-way table** — accuracy, precision, recall, false yes and missed
+yes at each cutoff. And a **three-way band table**, which is usually the more useful one: below
+the low edge an automatic no, at or above the high edge an automatic yes, everything between to
+a person. What you optimise there is accuracy on the part you decide automatically, read next to
+how much traffic you hand over.
+
+It also prints the observed values, because a cutoff placed on top of the data flips on noise.
+One recorded state in this suite returns 0.82 on nine repeats and 0.80 on the tenth: a
+`noul > 0.80` test would disagree with itself once in ten calls, not because the model is
+unstable but because the cutoff sits where the values are.
 
 ### Two kinds of expectation
 

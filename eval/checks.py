@@ -476,6 +476,67 @@ def _calibration(case: Case, index: Index, rel: Mapping[str, Any]) -> List[Findi
     return out
 
 
+@handler("threshold_sweep")
+def _threshold_sweep(case: Case, index: Index, rel: Mapping[str, Any]) -> List[Finding]:
+    """What each cutoff would actually decide, on states whose truth is known.
+
+    A Noul hands back a probability and leaves the cutoff to the caller. This
+    turns that choice into a table: for every candidate threshold, what the
+    code would have decided and how often it would have been right, and for
+    every candidate review band, how much traffic is decided automatically and
+    how accurate that automatic part is.
+    """
+    qid = rel["question"]
+    variant = _default_variant(case, rel)
+    labels: Dict[str, bool] = rel["labels"]
+    thresholds = rel.get("thresholds") or [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
+    bands = rel.get("bands") or [[0.5, 0.5], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9], [0.05, 0.95]]
+
+    pairs: List[Tuple[float, bool]] = []
+    for state, truth in labels.items():
+        value = index.mean_of(case.id, variant, state, qid)
+        if value is not None:
+            pairs.append((value, bool(truth)))
+    if len(pairs) < 4:
+        return [finding("threshold_sweep", "fail", case.id,
+                        "only %d labelled answers" % len(pairs), question=qid)]
+
+    rows = [M.confusion(pairs, t) for t in thresholds]
+    best = max(rows, key=lambda r: (r["accuracy"], r["f1"] if r["f1"] == r["f1"] else 0))
+
+    # A cutoff sitting on top of observed values flips on noise, so say where
+    # the nearest recorded value is to the one that looks best.
+    values = sorted(v for v, _ in pairs)
+    nearest = min(values, key=lambda v: abs(v - best["threshold"]))
+    margin = abs(nearest - best["threshold"])
+
+    out = [finding(
+        "threshold_sweep", "info", case.id,
+        "n=%d  best cutoff %.2f at accuracy %.2f (%d wrong)  nearest observed value %.2f, %.2f away"
+        % (len(pairs), best["threshold"], best["accuracy"], best["fp"] + best["fn"],
+           nearest, margin),
+        question=qid, variant=variant, best_threshold=best["threshold"],
+        rows=rows, bands=[M.band_split(pairs, lo, hi) for lo, hi in bands],
+        values=values)]
+
+    for r in rows:
+        out.append(finding(
+            "threshold_sweep.row", "info", case.id,
+            ">= %.2f   acc %.2f   precision %s   recall %s   %d false yes / %d missed yes"
+            % (r["threshold"], r["accuracy"], M.fmt(r["precision"], 2),
+               M.fmt(r["recall"], 2), r["fp"], r["fn"]),
+            question=qid))
+    for b in [M.band_split(pairs, lo, hi) for lo, hi in bands]:
+        out.append(finding(
+            "threshold_sweep.band", "info", case.id,
+            "review %.2f-%.2f   decides %.0f%% automatically at %.2f accuracy   "
+            "%d to a person   %d wrong decisions"
+            % (b["lo"], b["hi"], 100 * b["coverage"], b["auto_accuracy"],
+               b["review"], b["errors"]),
+            question=qid))
+    return out
+
+
 @handler("confidence_auroc")
 def _confidence_auroc(case: Case, index: Index, rel: Mapping[str, Any]) -> List[Finding]:
     """Does confidence separate answers that are right from ones that are wrong?"""

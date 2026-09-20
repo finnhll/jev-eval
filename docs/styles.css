@@ -128,7 +128,7 @@ td { padding: 7px 9px; border-bottom: 1px solid var(--line); vertical-align: top
 tr:hover td { background: var(--surface-1); }
 td.mono, th.mono { font: 12px var(--mono); }
 td.muted { color: var(--text-muted); }
-td.num { text-align: right; font: 12px var(--mono); font-variant-numeric: tabular-nums; }
+td.num { text-align: right; font: 12px var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 td.wrap { max-width: 42ch; }
 
 /* probability bar inside a table cell: magnitude, labelled, never colour alone */

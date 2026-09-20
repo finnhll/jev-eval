@@ -122,6 +122,60 @@ def auroc(scores: Sequence[float], labels: Sequence[bool]) -> float:
     return wins / (len(pos) * len(neg))
 
 
+def confusion(pairs: Sequence[Tuple[float, bool]], threshold: float) -> Dict[str, float]:
+    """Counts and rates for one cutoff, predicting yes when value >= threshold."""
+    tp = fp = tn = fn = 0
+    for value, truth in pairs:
+        predicted = value >= threshold
+        if predicted and truth:
+            tp += 1
+        elif predicted and not truth:
+            fp += 1
+        elif not predicted and truth:
+            fn += 1
+        else:
+            tn += 1
+    n = tp + fp + tn + fn
+    precision = tp / (tp + fp) if (tp + fp) else float("nan")
+    recall = tp / (tp + fn) if (tp + fn) else float("nan")
+    f1 = (2 * precision * recall / (precision + recall)
+          if precision == precision and recall == recall and (precision + recall) else float("nan"))
+    return {
+        "threshold": threshold, "tp": tp, "fp": fp, "tn": tn, "fn": fn, "n": n,
+        "accuracy": (tp + tn) / n if n else float("nan"),
+        "precision": precision, "recall": recall, "f1": f1,
+    }
+
+
+def band_split(pairs: Sequence[Tuple[float, bool]], lo: float, hi: float) -> Dict[str, float]:
+    """Three-way routing: auto-no below lo, auto-yes at or above hi, review between.
+
+    The number that matters when choosing a band is not overall accuracy but
+    accuracy on the part you let through automatically, read next to how much
+    of the traffic that leaves for a person.
+    """
+    auto_yes = auto_no = review = correct = 0
+    for value, truth in pairs:
+        if value >= hi:
+            auto_yes += 1
+            correct += 1 if truth else 0
+        elif value <= lo:
+            auto_no += 1
+            correct += 0 if truth else 1
+        else:
+            review += 1
+    decided = auto_yes + auto_no
+    n = decided + review
+    return {
+        "lo": lo, "hi": hi, "n": n, "auto_yes": auto_yes, "auto_no": auto_no,
+        "review": review,
+        "coverage": decided / n if n else float("nan"),
+        "review_share": review / n if n else float("nan"),
+        "auto_accuracy": correct / decided if decided else float("nan"),
+        "errors": decided - correct,
+    }
+
+
 def bootstrap_ci(
     values: Sequence,
     statistic: Callable[[Sequence], float],

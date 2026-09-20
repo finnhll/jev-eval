@@ -295,3 +295,84 @@ export function legend(items) {
   });
   return wrap;
 }
+
+/** Several series over a shared numeric x axis, with a crosshair on hover. */
+export function multiLine(host, { x, series, xLabel, yLabel, yMax = 1, xFmt = (v) => fmt(v, 2) }) {
+  responsive(host, (width) => {
+    const h = 270, padL = 46, padR = 16, padT = 14, padB = 48;
+    const svg = el("svg", { width, height: h, role: "img" });
+    const colors = SERIES();
+    const xs = x.map(Number);
+    const xMin = Math.min(...xs), xMax = Math.max(...xs);
+    const X = (v) => padL + ((v - xMin) / (xMax - xMin || 1)) * (width - padL - padR);
+    const tickVals = niceTicks(0, yMax, 4);
+    const top = Math.max(yMax, ...tickVals);
+    const Y = (v) => h - padB - (v / (top || 1)) * (h - padT - padB);
+
+    axes(svg, {
+      x0: padL, x1: width - padR, y0: padT, y1: h - padB,
+      ticks: tickVals.map((v) => ({ v, y: Y(v) })), yFmt: (v) => fmt(v, 2),
+    });
+
+    series.forEach((s, si) => {
+      const color = colors[si % colors.length];
+      const d = s.values.map((v, i) =>
+        v === null || v === undefined ? null : `${X(xs[i])},${Y(v)}`)
+        .filter(Boolean).map((p, i) => (i ? "L" : "M") + p).join(" ");
+      svg.appendChild(el("path", { d, fill: "none", stroke: color, "stroke-width": 2,
+        "stroke-linejoin": "round", "stroke-linecap": "round" }));
+      s.values.forEach((v, i) => {
+        if (v === null || v === undefined) return;
+        svg.appendChild(el("circle", { cx: X(xs[i]), cy: Y(v), r: 4.5, fill: color,
+          stroke: css("--surface-1"), "stroke-width": 2 }));
+      });
+      // direct label at the line's end, so identity never rests on colour alone
+      const lastIdx = s.values.length - 1;
+      if (s.values[lastIdx] !== null && s.values[lastIdx] !== undefined) {
+        svg.appendChild(el("text", {
+          x: X(xs[lastIdx]) + 6, y: Y(s.values[lastIdx]) + 4, "text-anchor": "start",
+          fill: css("--text-secondary"), "font-size": 11,
+        }, s.label));
+      }
+    });
+
+    // one crosshair band per x position
+    const crosshair = el("line", { y1: padT, y2: h - padB, stroke: css("--line-strong"),
+      "stroke-width": 1, opacity: 0 });
+    svg.appendChild(crosshair);
+    xs.forEach((xv, i) => {
+      const band = (width - padL - padR) / Math.max(1, xs.length - 1);
+      const hit = el("rect", {
+        x: X(xv) - band / 2, y: padT, width: band, height: h - padB - padT, fill: "transparent",
+      });
+      hit.addEventListener("pointerenter", (e) => {
+        crosshair.setAttribute("x1", X(xv));
+        crosshair.setAttribute("x2", X(xv));
+        crosshair.setAttribute("opacity", "1");
+        TIP.show(`<b>${xLabel || "x"} ${xFmt(xv)}</b>` + series.map((s) =>
+          `<div class="row">${s.label} ${fmt(s.values[i], 2)}</div>`).join(""),
+          e.clientX, e.clientY);
+      });
+      hit.addEventListener("pointerleave", () => {
+        crosshair.setAttribute("opacity", "0");
+        TIP.hide();
+      });
+      svg.appendChild(hit);
+      if (i % Math.ceil(xs.length / Math.max(2, Math.floor(width / 70))) === 0) {
+        svg.appendChild(el("text", { x: X(xv), y: h - padB + 18, "text-anchor": "middle",
+          fill: css("--text-muted"), "font-size": 11, "font-family": css("--mono") },
+          xFmt(xv)));
+      }
+    });
+    if (xLabel) {
+      svg.appendChild(el("text", { x: padL + (width - padL - padR) / 2, y: h - 6,
+        "text-anchor": "middle", fill: css("--text-muted"), "font-size": 11 }, xLabel));
+    }
+    if (yLabel) {
+      svg.appendChild(el("text", { x: 12, y: padT + (h - padT - padB) / 2, "text-anchor": "middle",
+        fill: css("--text-muted"), "font-size": 11,
+        transform: `rotate(-90 12 ${padT + (h - padT - padB) / 2})` }, yLabel));
+    }
+    return svg;
+  });
+}
