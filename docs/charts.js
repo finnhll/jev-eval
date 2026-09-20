@@ -299,7 +299,10 @@ export function legend(items) {
 /** Several series over a shared numeric x axis, with a crosshair on hover. */
 export function multiLine(host, { x, series, xLabel, yLabel, yMax = 1, xFmt = (v) => fmt(v, 2) }) {
   responsive(host, (width) => {
-    const h = 270, padL = 46, padR = 16, padT = 14, padB = 48;
+    // Each line is labelled at its end, so the right margin has to hold the
+    // longest of those labels rather than a fixed gutter.
+    const longest = Math.max(0, ...series.map((s) => s.label.length));
+    const h = 270, padL = 46, padR = 14 + longest * 6.2, padT = 14, padB = 48;
     const svg = el("svg", { width, height: h, role: "img" });
     const colors = SERIES();
     const xs = x.map(Number);

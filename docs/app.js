@@ -366,12 +366,12 @@ function thresholdCard(f) {
     node.append(h("h3", {}, "Three-way band, with a review lane"));
     node.append(h("p", { class: "cap" },
       "Below the low edge is an automatic no, at or above the high edge an automatic yes, " +
-      "and everything between goes to a person. The number worth optimising is accuracy on " +
-      "the part you decide automatically, read next to how much you hand over."));
+      "and everything between goes to a person. Accuracy is measured on the automatically " +
+      "decided part only; wrong counts the decisions it got wrong there. The number worth " +
+      "optimising is that accuracy, read next to how much you hand over."));
     node.append(tbl(
-      h("tr", {}, h("th", {}, "band"), h("th", {}, "decided automatically"),
-        h("th", {}, "accuracy when decided"), h("th", {}, "sent to review"),
-        h("th", {}, "wrong decisions")),
+      h("tr", {}, h("th", {}, "band"), h("th", {}, "auto-decided"),
+        h("th", {}, "accuracy"), h("th", {}, "to review"), h("th", {}, "wrong")),
       ...f.bands.map((b) => h("tr", {},
         h("td", { class: "num" }, `${fmt(b.lo, 2)} – ${fmt(b.hi, 2)}`),
         h("td", { class: "num" }, fmt(100 * b.coverage, 0) + "%"),
